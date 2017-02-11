@@ -32,3 +32,8 @@ To run the classification, run from the command line
 ```
 python svm_classifier.py
 ```
+
+To run the Tensorflow based classification, first install Tensorflow as described [here](https://www.tensorflow.org/get_started/os_setup). Then, run
+```
+python deep_classifier.py
+```
