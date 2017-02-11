@@ -33,8 +33,23 @@ if __name__ == "__main__":
     validation_labels = np.asarray([BIRD_LABEL] * 100 + [PLANE_LABEL] * 100)
     testing_labels = np.asarray([BIRD_LABEL] * 400 + [PLANE_LABEL] * 400)
 
-    # train the default sklearn linear SVM
-    classifier = svm.LinearSVC()
+    # Look for the best parameter C by predicting
+    # on the validation set
+    values_of_C = [0.01, 0.1, 1.0, 10.0, 100.0]
+    best_C = 0.01
+    best_prediction = 0
+
+    for try_C in values_of_C:
+        classifier = svm.LinearSVC( C = try_C )
+        classifier.fit(training_data, training_labels)
+        predictions = classifier.predict(validation_data)
+        score = metrics.accuracy_score(validation_labels, predictions)
+        if score > best_prediction:
+            best_prediction = score
+            best_C = try_C
+
+    # train the default sklearn linear SVM using the best parameters
+    classifier = svm.LinearSVC( C = best_C )
     classifier.fit(training_data, training_labels)
 
     # test the trained SVM
