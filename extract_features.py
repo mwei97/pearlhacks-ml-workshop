@@ -12,22 +12,19 @@ VALIDATION_P_IMAGE_LIST_PATH = os.path.join(DATA_PATH, "plane.val")
 TESTING_P_IMAGE_LIST_PATH = os.path.join(DATA_PATH, "plane.test")
 
 #
-# Generates an 8x8x8 color histogram for image img. Greyscale
-# images are handled by duplicating single channel 3 times
+# Generates an 8x8x8 color histogram for the image at image_path
 #
 def generateHistogram(image_path):
     im = Image.open(os.path.join(DATA_PATH, image_path))
     pixels = im.load()
     width, height = im.size
 
-    # Initialize each color hist with 8 bins
-    # spaced evenly across 0-255
-    rhist = [0] * 8
-    ghist = [0] * 8
-    bhist = [0] * 8
-
+    # Initialize a color hist with 8x8x8 bins overall,
+    # so each RGB color gets 8 bins
     hist = [0] * 8 * 8 * 8
 
+    # Iterate over all pixels in the image, and
+    # update each color frequency
     for row in range(height):
         for col in range(width):
             value = pixels[col,row]
@@ -36,13 +33,26 @@ def generateHistogram(image_path):
             g = value[1]
             b = value[2]
 
+            # Divide each color up into 8 bins (256/32=8)
             rindex = int(r/32)
             gindex = int(g/32)
             bindex = int(b/32)
 
+            # Increment a bin in the 512 long hist based on
+            # which bins we have. Each digit of the index
+            # describes which RGB bin we want to increment
             hist[rindex * 1 + gindex * 8 + bindex * 64] += 1
 
+    # Free the image
     del im
+
+    # Turn the histogram into a numpy array
+    # and normalize it according to the image size.
+    # This is necessary since our input images are not
+    # all the same size (bigger images would have
+    # higher frequencies overall, which we don't want).
+    return_hist = np.asarray(hist)
+    return_hist = return_hist / (width * height)
     return np.asarray(hist)
 
 if __name__ == "__main__":
@@ -94,6 +104,7 @@ if __name__ == "__main__":
     output_validation = np.asarray(validation_image_histograms)
     output_testing = np.asarray(testing_image_histograms)
 
+    print("Saving features to '*_features.npy'...")
     np.save("training_features.npy", output_training)
     np.save("validation_features.npy", output_validation)
     np.save("testing_features.npy", output_testing)   
